@@ -17,19 +17,12 @@ menu_keyboard = ReplyKeyboardMarkup(
 
 
 # Определение обработчиков команд. Обычно они принимают два аргумента: update и context.
-"""async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """"""Отправка сообщения, когда пользователь вводит команду /start.""""""
-    user = update.effective_user
-    await update.message.reply_html(
-        rf"Привет, {user.mention_html()}!",
-        reply_markup=ForceReply(selective=True),
-    )"""
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Отправка сообщения, когда пользователь вводит команду /start."""
     user = update.effective_user
     reply_keyboard = ReplyKeyboardMarkup(
-        [["главная", "афиша"], ["исполнители", "билеты"]]
+        [["афиша", "розыгрыш билетов"], ["исполнители", "Обратная связь"]]
     )
     await update.message.reply_html(
         rf"Привет, {user.mention_html()}!",
@@ -46,6 +39,10 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Эхо-ответ на сообщение пользователя."""
     await update.message.reply_text(update.message.text)
 
+async def afisha(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Отправка сообщения, когда пользователь вводит 'афиша'."""
+    await update.message.reply_text("сегодня")
+
 
 def main() -> None:
     """Запуск бота."""
@@ -55,6 +52,8 @@ def main() -> None:
     # Назначение обработчиков на различные команды в Telegram.
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    # Добавление обработчика сообщений для текста 'афиша'
+    application.add_handler(MessageHandler(filters=filters.Text('афиша'), callback=afisha))
 
     # Обработка любых сообщений, кроме команд.
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
