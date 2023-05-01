@@ -38,8 +38,8 @@ def json_afisha() -> None:
             'value']  # получаем ссылку на покупку билетов мероприятия
         afisha.extend([title, txt, time_start, time_end, banner, ticket])
         afisha_card.append(afisha)  # добавляем полученную информацию в список afisha_card
-        print(afisha)  # выводим полученную информацию на экран
+        #print(afisha)  # выводим полученную информацию на экран
 
-    print("\n", afisha_card, "\n")  # выводим итоговый список на экран
-    print(data)  # выводим исходные данные в формате JSON на экран
+    #print("\n", afisha_card, "\n")  # выводим итоговый список на экран
+    #print(data)  # выводим исходные данные в формате JSON на экран
     return afisha_card
