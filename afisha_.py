@@ -6,14 +6,25 @@ async def afisha(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Афиша'."""
     afisha_card = json_afisha() # загрузка json
     # Создание кнопок выбора даты концерта
-    keyboard_buttons = [
-        [InlineKeyboardButton(text=event[2][0], callback_data=f"event_{event[2][0]}")]
-        for event in afisha_card
-    ]
+    #print(afisha_card)
+
+    keyboard_buttons_left = [InlineKeyboardButton(text=event[2][0], callback_data=f"event_{event[2][0]}")
+                             for event in afisha_card[:len(afisha_card) // 2]
+                             ]
+
+    keyboard_buttons_right = [InlineKeyboardButton(text=event[2][0], callback_data=f"event_{event[2][0]}")
+                              for event in afisha_card[len(afisha_card) // 2:]
+                              ]
+
     # Создание клавиатуры с кнопками выбора даты концерта
-    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        keyboard_buttons_left,
+        keyboard_buttons_right,
+    ])
+
     # Отправка сообщения пользователю с клавиатурой выбора даты концерта
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите дату концерта", reply_markup=keyboard)
+
     # Сохранение данных афиши в пользовательскую базу данных бота
     context.user_data["afisha_card"] = afisha_card
 async def afisha_callback(update, context):

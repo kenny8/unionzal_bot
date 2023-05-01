@@ -10,7 +10,7 @@ from telegram.ext import (
     CallbackContext,
 )
 from telegram import InputMediaPhoto
-from json_parser import json_afisha
+from json_parser import json_persons
 import settings
 from afisha_ import afisha_callback, more_info_callback, read_more_callback, prev_callback, next_callback, afisha
 
@@ -37,7 +37,7 @@ async def start(update, context):
     )
     # Отправка сообщения пользователю
     await update.message.reply_html(
-        rf"Привет, {user.mention_html()}!",
+        rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
 
@@ -53,11 +53,6 @@ async def echo(update, context):
     # Отправка сообщения пользователю, которое повторяет его входящее сообщение
     await update.message.reply_text(update.message.text)
 
-
-
-
-
-
 async def giveaway(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Розыгрыш билетов'."""
     await update.message.reply_text("какой-то розыгрыш билетов")
@@ -65,8 +60,19 @@ async def giveaway(update, context):
 
 async def performers(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Исполнители'."""
-    await update.message.reply_text("список исполнителей")
-
+    persons_card = json_persons() # загрузка json
+    # Создание кнопок выбора выбора вида исполнителя
+    print(persons_card)
+    persons = list(set(event[2] for event in persons_card))
+    persons.insert(0, "Поиск")
+    # Создание кнопок выбора выбора вида исполнителя
+    keyboard_buttons = [[InlineKeyboardButton(text=per, callback_data=f"event_{per}")] for per in persons]
+    # Создание клавиатуры с кнопками выбора вида исполнителя
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
+    # Отправка сообщения пользователю с клавиатурой выбора вида исполнителя
+    await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите:", reply_markup=keyboard)
+    # Сохранение данных персоналий в пользовательскую базу данных бота
+    context.user_data["persons_card"] = persons_card
 
 async def feedback(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Обратная связь'."""
@@ -76,7 +82,7 @@ async def feedback(update, context):
 def main():
     """Запуск бота."""
     # Создание приложения и передача ему токена вашего бота.
-    application = Application.builder().token("6241891253:AAEtTI5Ma8z34FM3fOusBJoLqI7xtRGLnTU").build()
+    application = Application.builder().token(settings.TOKEN_BOT).build()
     # Назначение обработчиков на различные команды в Telegram.
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
