@@ -74,7 +74,15 @@ async def afisha_callback(update, context):
     """Отправка сообщения с заголовком и текстом события, выбранного пользователем."""
     query = update.callback_query
     await query.answer()
-    await query.edit_message_text(text=f"Вы выбрали: {query.data}")
+    # Получение выбранного события
+    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data][0]
+    # Отправка фото
+    await context.bot.send_photo(chat_id=query.message.chat_id, photo=selected_event[4])
+    # Отправка заголовка и кнопки
+    keyboard = [[InlineKeyboardButton(text="Купить билет", url=selected_event[5])]]
+    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+    text = f"{selected_event[0]}\n\n{selected_event[2][1]} - {selected_event[3][1]}"
+    await context.bot.send_message(chat_id=query.message.chat_id, text=text, reply_markup=markup)
     print("looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool")
 
 
