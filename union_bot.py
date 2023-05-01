@@ -73,8 +73,8 @@ async def afisha(update, context):
 async def afisha_callback(update, context):
     """Отправка сообщения с заголовком и текстом события, выбранного пользователем."""
     query = update.callback_query
-    query.answer()
-    query.edit_message_text(text=f"Вы выбрали: {query.data}")
+    await query.answer()
+    await query.edit_message_text(text=f"Вы выбрали: {query.data}")
     print("looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool")
 
 
