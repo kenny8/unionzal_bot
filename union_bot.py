@@ -11,6 +11,7 @@ from telegram.ext import (
 )
 from telegram import InputMediaPhoto
 from json_parser import json_afisha
+import settings
 
 # Включение логгирования
 logging.basicConfig(
@@ -24,10 +25,8 @@ menu_keyboard = ReplyKeyboardMarkup(
     keyboard=[["Главная", "Афиша"], ["Исполнители", "Билеты"]]
 )
 
-MAX_MESSAGE_LENGTH = 900
-
 def split_text(text):
-    if len(text) < MAX_MESSAGE_LENGTH:
+    if len(text) < settings.MAX_MESSAGE_LENGTH:
         return [text]
 
     # Разделяем текст на подстроки по пробелам
@@ -37,7 +36,7 @@ def split_text(text):
     current_substring = ''
 
     for substring in substrings:
-        if len(current_substring) + len(substring) < MAX_MESSAGE_LENGTH:
+        if len(current_substring) + len(substring) < settings.MAX_MESSAGE_LENGTH:
             current_substring += ' ' + substring
         else:
             result.append(current_substring.strip())
@@ -76,8 +75,8 @@ async def echo(update, context):
 
 async def afisha(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Афиша'."""
-    afisha_card = json_afisha()#загрузка json
-    # Создание кнопки выбора даты концерта
+    afisha_card = json_afisha() # загрузка json
+    # Создание кнопок выбора даты концерта
     keyboard_buttons = [
         [InlineKeyboardButton(text=event[2][0], callback_data=f"event_{event[2][0]}")]
         for event in afisha_card
@@ -85,14 +84,9 @@ async def afisha(update, context):
     # Создание клавиатуры с кнопками выбора даты концерта
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     # Отправка сообщения пользователю с клавиатурой выбора даты концерта
-    await context.bot.send_message(
-        chat_id=update.message.chat_id,
-        text="Выберите дату концерта",
-        reply_markup=keyboard,
-    )
+    await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите дату концерта", reply_markup=keyboard)
     # Сохранение данных афиши в пользовательскую базу данных бота
     context.user_data["afisha_card"] = afisha_card
-
 
 async def afisha_callback(update, context):
     """Отправка сообщения с заголовком и текстом события, выбранного пользователем."""
@@ -115,8 +109,11 @@ async def afisha_callback(update, context):
     text = f"{selected_event[0]}\n\n{selected_event[2][1]} - {selected_event[3][1]} - {selected_event[2][0]}"
     # Отправка сообщения
     #await context.bot.send_message(chat_id=query.message.chat_id, text=text, reply_markup=markup)
-    await context.bot.send_photo(chat_id=query.message.chat_id, photo=selected_event[4], caption=text,
-                                 reply_markup=markup)
+    #await context.bot.send_photo(chat_id=query.message.chat_id, photo=selected_event[4], caption=text,
+    #                             reply_markup=markup)
+    await context.bot.edit_message_media(chat_id=query.message.chat_id, message_id=query.message.message_id,
+                                         media=InputMediaPhoto(selected_event[4], caption=text),
+                                         reply_markup=markup)
     #media = InputMediaPhoto(media=selected_event[4], caption=text)
     #await query.edit_message_media(media=media, reply_markup=markup)
 

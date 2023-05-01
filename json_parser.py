@@ -42,4 +42,4 @@ def json_afisha() -> None:
 
     #print("\n", afisha_card, "\n")  # выводим итоговый список на экран
     #print(data)  # выводим исходные данные в формате JSON на экран
-    return afisha_card
+    return sorted(afisha_card, key=lambda x: datetime.strptime(x[2][0], '%d.%m.%y'))
