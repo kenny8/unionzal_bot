@@ -31,7 +31,6 @@ async def afisha(update, context):
     keyboard = InlineKeyboardMarkup(inline_keyboard=build_menu(buttons, n_cols=2))
     # Отправка сообщения пользователю с клавиатурой выбора даты концерта
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите дату концерта", reply_markup=keyboard)
-
     # Сохранение данных афиши в пользовательскую базу данных бота
     context.user_data["afisha_card"] = afisha_card
 async def afisha_callback(update, context):
