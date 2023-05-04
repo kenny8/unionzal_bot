@@ -2,26 +2,33 @@ import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InputMediaPhoto
 from json_parser import json_afisha
+
+def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
+    """
+    Создает меню с кнопками.
+    :param buttons: список кнопок
+    :param n_cols: количество столбцов
+    :param header_buttons: список кнопок для шапки
+    :param footer_buttons: список кнопок для подвала
+    :return: InlineKeyboardMarkup
+    """
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, header_buttons)
+    if footer_buttons:
+        menu.append(footer_buttons)
+    return menu
+
+
 async def afisha(update, context):
+
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Афиша'."""
     afisha_card = json_afisha() # загрузка json
     # Создание кнопок выбора даты концерта
     #print(afisha_card)
-
-    keyboard_buttons_left = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")
-                             for event in afisha_card[:len(afisha_card) // 2]
-                             ]
-
-    keyboard_buttons_right = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")
-                              for event in afisha_card[len(afisha_card) // 2:]
-                              ]
-
-    # Создание клавиатуры с кнопками выбора даты концерта
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        keyboard_buttons_left,
-        keyboard_buttons_right,
-    ])
-
+    buttons = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")
+                             for event in afisha_card]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=build_menu(buttons, n_cols=2))
     # Отправка сообщения пользователю с клавиатурой выбора даты концерта
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите дату концерта", reply_markup=keyboard)
 

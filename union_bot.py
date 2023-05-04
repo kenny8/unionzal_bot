@@ -56,6 +56,7 @@ async def start(update, context):
         rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
+    context.user_data["search_query"] = False
 
 
 async def help_command(update, context):
@@ -86,11 +87,11 @@ async def performers(update, context):
     search_button = InlineKeyboardButton(text="Поиск", callback_data=f"performers_search_")
     buttons.append(search_button)
     keyboard = InlineKeyboardMarkup(inline_keyboard=build_menu(buttons, n_cols=2))
-
     # Отправка сообщения пользователю с клавиатурой выбора вида исполнителя
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите:", reply_markup=keyboard)
     # Сохранение данных персоналий в пользовательскую базу данных бота
     context.user_data["persons_card"] = persons_card
+
 
 
 async def performers_callback(update, context):
@@ -100,16 +101,13 @@ async def performers_callback(update, context):
     if data[1] == "event":
         # Получение карточек исполнителей из пользовательских данных
         persons_card = context.user_data.get("persons_card")
-
         # Фильтрация карточек исполнителей по выбранному типу
         persons = [card for card in persons_card if card[2] == data[2]]
-
         buttons = [InlineKeyboardButton(text=str(i + 1), callback_data=f"performers_card_{data[2]}_{i}") for i, _ in
                    enumerate(persons)]
         back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_back_")
         buttons.append(back_button)
         keyboard = InlineKeyboardMarkup(inline_keyboard=build_menu(buttons, n_cols=3))
-
         # Отправка сообщения с номерами исполнителей и кнопкой назад
         text = f"Выберите номер {data[2]}:\n"
         text += "\n".join([f"{i + 1}. {p[0]}" for i, p in enumerate(persons)])
@@ -145,7 +143,8 @@ async def performers_callback(update, context):
         context.user_data["search_query"] = True
         context.user_data["search_type"] = "performers"
         context.user_data["search_data"] = {}
-        await PerformersSearch.PERFORMERS_NAME.set()
+        context.user_data["performers_search_state"] = "performers_name"  # устанавливаем состояние поиска
+
     elif data[1] == "back":
         # Создание кнопок выбора выбора вида исполнителя
         persons_card = context.user_data.get("persons_card")
@@ -160,27 +159,31 @@ async def performers_callback(update, context):
         await context.bot.edit_message_media(chat_id=query.message.chat_id, message_id=query.message.message_id,
                                              media=InputMediaPhoto(settings.MAIN_WALLPAPERS, caption="Выберите:"),
                                              reply_markup=keyboard)
+        context.user_data["search_query"] = False
 
 async def performers_search_name(update, context):
-    # Получение введенного пользователем имени
-    search_name = update.message.text
+    if context.user_data["search_query"] :
+        # Получение введенного пользователем имени
+        search_name = update.message.text
 
-    # Получение карточек исполнителей из пользовательских данных
-    persons_card = context.user_data.get("persons_card")
+        # Получение карточек исполнителей из пользовательских данных
+        persons_card = context.user_data.get("persons_card")
 
-    # Фильтрация карточек исполнителей по имени
-    persons = [card for card in persons_card if search_name.lower() in card[0].lower()]
+        # Фильтрация карточек исполнителей по имени
+        persons = [card for card in persons_card if search_name.lower() in card[0].lower()]
 
-    if not persons:
-        text = "К сожалению, ничего не найдено. Попробуйте ввести другое имя."
-        await update.message.reply_text(text)
-    else:
-        for person in persons:
-            # Вывод картинки, текста и кнопки ссылки на исполнителя
-            button = InlineKeyboardButton(text="Ссылка", url=person[3])
-            keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]])
-            await context.bot.send_photo(chat_id=update.message.chat_id, photo=person[4], caption=person[0],
-                                         reply_markup=keyboard)
+        if not persons:
+            text = "К сожалению, ничего не найдено. Попробуйте ввести другое имя."
+            await update.message.reply_text(text)
+        else:
+            for person in persons:
+                # Вывод картинки, текста и кнопки ссылки на исполнителя
+                button = InlineKeyboardButton(text="Ссылка", url=person[3])
+                back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_back_")
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[[button, back_button]])
+                await context.bot.send_photo(chat_id=update.message.chat_id, photo=person[4], caption=person[0],
+                                             reply_markup=keyboard)
+            context.user_data["search_query"] = False
 
 async def feedback(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Обратная связь'."""
@@ -215,6 +218,10 @@ def main():
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_card_\d*"))
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_back_\d*"))
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_search_\d*"))
+    # Добавление обработчика для команды /search_performers
+
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, performers_search_name))
+
     application.add_handler(
         MessageHandler(filters.Regex("^Обратная связь$"), callback=feedback)
     )
