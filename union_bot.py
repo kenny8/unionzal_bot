@@ -97,7 +97,6 @@ async def performers(update, context):
 async def performers_callback(update, context):
     query = update.callback_query
     data = query.data.split("_")
-
     if data[1] == "event":
         # Получение карточек исполнителей из пользовательских данных
         persons_card = context.user_data.get("persons_card")
