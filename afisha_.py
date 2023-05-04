@@ -8,11 +8,11 @@ async def afisha(update, context):
     # Создание кнопок выбора даты концерта
     #print(afisha_card)
 
-    keyboard_buttons_left = [InlineKeyboardButton(text=event[2][0], callback_data=f"event_{event[2][0]}")
+    keyboard_buttons_left = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")
                              for event in afisha_card[:len(afisha_card) // 2]
                              ]
 
-    keyboard_buttons_right = [InlineKeyboardButton(text=event[2][0], callback_data=f"event_{event[2][0]}")
+    keyboard_buttons_right = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")
                               for event in afisha_card[len(afisha_card) // 2:]
                               ]
 
@@ -31,14 +31,14 @@ async def afisha_callback(update, context):
     """Отправка сообщения с заголовком и текстом события, выбранного пользователем."""
     query = update.callback_query
     await query.answer()
-    print(query.data.split("_")[1])
+    print(query.data.split("_")[2])
     # Получение выбранного события
-    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[1]][0]
+    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[2]][0]
     # Создание кнопок
     buy_button = InlineKeyboardButton(text="Купить билет", url=selected_event[5])
-    more_info_button = InlineKeyboardButton(text="Подробнее", callback_data=f"more_info_{selected_event[2][0]}")
-    prev_button = InlineKeyboardButton(text="<", callback_data=f"prev_{selected_event[2][0]}")
-    next_button = InlineKeyboardButton(text=">", callback_data=f"next_{selected_event[2][0]}")
+    more_info_button = InlineKeyboardButton(text="Подробнее", callback_data=f"afisha_more_info_{selected_event[2][0]}")
+    prev_button = InlineKeyboardButton(text="<", callback_data=f"afisha_prev_{selected_event[2][0]}")
+    next_button = InlineKeyboardButton(text=">", callback_data=f"afisha_next_{selected_event[2][0]}")
     # Создание разметки с кнопками
     keyboard = [[buy_button, more_info_button], [prev_button, next_button]]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -55,14 +55,14 @@ async def more_info_callback(update, context):
     print(query.data.split("_"))
     await query.answer()
     # Получение выбранного события
-    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[2]][0]
+    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[3]][0]
     txt = split_text(selected_event[1])
     # Создание кнопок
     buy_button = InlineKeyboardButton(text="Купить билет", url=selected_event[5])
-    prev_button = InlineKeyboardButton(text="<", callback_data=f"prev_{selected_event[2][0]}")
-    next_button = InlineKeyboardButton(text=">", callback_data=f"next_{selected_event[2][0]}")
+    prev_button = InlineKeyboardButton(text="<", callback_data=f"afisha_prev_{selected_event[2][0]}")
+    next_button = InlineKeyboardButton(text=">", callback_data=f"afisha_next_{selected_event[2][0]}")
     if len(txt) > 1:
-        read_more = InlineKeyboardButton(text="дальше", callback_data=f"read_more_{selected_event[2][0]}")
+        read_more = InlineKeyboardButton(text="дальше", callback_data=f"afisha_read_more_{selected_event[2][0]}")
         keyboard = [[buy_button, read_more], [prev_button, next_button]]
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
         # Редактирование сообщения
@@ -84,12 +84,12 @@ async def read_more_callback(update, context):
     print(query.data.split("_"))
     await query.answer()
     # Получение выбранного события
-    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[2]][0]
+    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[3]][0]
     txt = split_text(selected_event[1])
     # Создание кнопок
     buy_button = InlineKeyboardButton(text="Купить билет", url=selected_event[5])
-    prev_button = InlineKeyboardButton(text="<", callback_data=f"prev_{selected_event[2][0]}")
-    next_button = InlineKeyboardButton(text=">", callback_data=f"next_{selected_event[2][0]}")
+    prev_button = InlineKeyboardButton(text="<", callback_data=f"afisha_prev_{selected_event[2][0]}")
+    next_button = InlineKeyboardButton(text=">", callback_data=f"afisha_next_{selected_event[2][0]}")
     keyboard = [[buy_button], [prev_button, next_button]]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
     # Редактирование сообщения
@@ -104,7 +104,7 @@ async def prev_callback(update, context):
     await query.answer()
     print(query.data.split("_"))
     # Получение выбранного события
-    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[1]][0]
+    selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[2]][0]
     # Поиск индекса выбранного события в списке
     index = context.user_data["afisha_card"].index(selected_event)
     # Выбор предыдущего события в списке (если есть)
@@ -112,9 +112,9 @@ async def prev_callback(update, context):
         prev_event = context.user_data["afisha_card"][index - 1]
         # Создание кнопок
         buy_button = InlineKeyboardButton(text="Купить билет", url=prev_event[5])
-        more_info_button = InlineKeyboardButton(text="Подробнее", callback_data=f"more_info_{prev_event[2][0]}")
-        prev_button = InlineKeyboardButton(text="<", callback_data=f"prev_{prev_event[2][0]}")
-        next_button = InlineKeyboardButton(text=">", callback_data=f"next_{prev_event[2][0]}")
+        more_info_button = InlineKeyboardButton(text="Подробнее", callback_data=f"afisha_more_info_{prev_event[2][0]}")
+        prev_button = InlineKeyboardButton(text="<", callback_data=f"afisha_prev_{prev_event[2][0]}")
+        next_button = InlineKeyboardButton(text=">", callback_data=f"afisha_next_{prev_event[2][0]}")
         # Создание разметки с кнопками
         if index == 1:
             keyboard = [[buy_button, more_info_button], [next_button]]
@@ -140,7 +140,7 @@ async def next_callback(update, context):
     # Получение списка всех событий
     events = context.user_data["afisha_card"]
     # Получение индекса текущего события
-    current_index = [i for i, event in enumerate(events) if event[2][0] == query.data.split("_")[1]][0]
+    current_index = [i for i, event in enumerate(events) if event[2][0] == query.data.split("_")[2]][0]
     # Получение текущего события
     current_event = events[current_index]
     # Получение следующего события
@@ -155,9 +155,9 @@ async def next_callback(update, context):
     text = f"{next_event[0]}\n\n{next_event[2][1]} - {next_event[3][1]} - {next_event[2][0]}"
     # Создание кнопок
     buy_button = InlineKeyboardButton(text="Купить билет", url=next_event[5])
-    more_info_button = InlineKeyboardButton(text="Подробнее", callback_data=f"more_info_{next_event[2][0]}")
-    prev_button = InlineKeyboardButton(text="<", callback_data=f"prev_{next_event[2][0]}")
-    next_button = InlineKeyboardButton(text=">", callback_data=f"next_{next_event[2][0]}")
+    more_info_button = InlineKeyboardButton(text="Подробнее", callback_data=f"afisha_more_info_{next_event[2][0]}")
+    prev_button = InlineKeyboardButton(text="<", callback_data=f"afisha_prev_{next_event[2][0]}")
+    next_button = InlineKeyboardButton(text=">", callback_data=f"afisha_next_{next_event[2][0]}")
     # Создание разметки с кнопками
     keyboard = [[buy_button, more_info_button], [prev_button, next_button]]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)

@@ -67,6 +67,7 @@ def json_persons() -> None:
             item['nid'][0]['value'])  # получаем ссылка на сайт
         persons_tags = settings.TIPE[item['field_tags'][0]['target_id']] # получаем список тегов персоны, если они есть
         persons_image = item['field_image'][0]['url'] # получаем изображение персоны, если оно есть
+        #print(persons_image)
         persons.extend([persons_name, persons_description, persons_tags, persons_url, persons_image])
         persons_card.append(persons)  # добавляем полученную информацию в список persons_card
         #print(persons)
