@@ -116,25 +116,27 @@ async def performers_callback(update, context):
         context.user_data["search_query"] = False
 
 async def performers_search_name(update, context):
-    if context.user_data["search_query"] :
-        # Получение введенного пользователем имени
-        search_name = update.message.text
+    search_query = context.user_data.get("search_query")
+    if search_query is not None:
+        if context.user_data["search_query"]:
+            # Получение введенного пользователем имени
+            search_name = update.message.text
 
-        # Получение карточек исполнителей из пользовательских данных
-        persons_card = context.user_data.get("persons_card")
+            # Получение карточек исполнителей из пользовательских данных
+            persons_card = context.user_data.get("persons_card")
 
-        # Фильтрация карточек исполнителей по имени
-        persons = [card for card in persons_card if search_name.lower() in card[0].lower()]
+            # Фильтрация карточек исполнителей по имени
+            persons = [card for card in persons_card if search_name.lower() in card[0].lower()]
 
-        if not persons:
-            text = "К сожалению, ничего не найдено. Попробуйте ввести другое имя."
-            await update.message.reply_text(text)
-        else:
-            for person in persons:
-                # Вывод картинки, текста и кнопки ссылки на исполнителя
-                button = InlineKeyboardButton(text="Ссылка", url=person[3])
-                back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_back_")
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[[button, back_button]])
-                await context.bot.send_photo(chat_id=update.message.chat_id, photo=person[4], caption=person[0],
-                                             reply_markup=keyboard)
-            context.user_data["search_query"] = False
+            if not persons:
+                text = "К сожалению, ничего не найдено. Попробуйте ввести другое имя."
+                await update.message.reply_text(text)
+            else:
+                for person in persons:
+                    # Вывод картинки, текста и кнопки ссылки на исполнителя
+                    button = InlineKeyboardButton(text="Ссылка", url=person[3])
+                    back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_back_")
+                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button, back_button]])
+                    await context.bot.send_photo(chat_id=update.message.chat_id, photo=person[4], caption=person[0],
+                                                 reply_markup=keyboard)
+                context.user_data["search_query"] = False

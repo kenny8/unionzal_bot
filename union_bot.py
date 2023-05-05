@@ -23,8 +23,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Создание разметки клавиатуры для меню
-menu_keyboard = ReplyKeyboardMarkup(
-    keyboard=[["Главная", "Афиша"], ["Исполнители", "Билеты"]]
+reply_keyboard = ReplyKeyboardMarkup(
+    [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]]
 )
 
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
@@ -43,22 +43,39 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
         menu.append(footer_buttons)
     return menu
 
+async def admin(update, context):
+    """Отправка сообщения, когда пользователь нажимает на кнопку для входа в админку."""
+    # Отправка сообщения пользователю с клавиатурой выбора даты концерта
+    global reply_keyboard
+    reply_keyboard = ReplyKeyboardMarkup(
+        [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь", "Выход"]]
+    )
+    await context.bot.send_message(chat_id=update.message.chat_id,
+                                   text="вы вошли в админку",
+                                   reply_markup=reply_keyboard)
+    context.user_data["admin"] = True
+
+async def admin_out(update, context):
+    if context.user_data["admin"]:
+        global reply_keyboard
+        reply_keyboard = ReplyKeyboardMarkup(
+            [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]]
+        )
+        await context.bot.send_message(chat_id=update.message.chat_id,
+                                       text="вы вышли из админки",
+                                       reply_markup=reply_keyboard)
+        context.user_data["admin"] = False
+
 
 # Определение обработчиков команд. Обычно они принимают два аргумента: update и context.
 async def start(update, context):
     """Отправка сообщения, когда пользователь вводит команду /start."""
     user = update.effective_user
-    # Создание новой клавиатуры с кнопками выбора действия для пользователя
-    reply_keyboard = ReplyKeyboardMarkup(
-        [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]]
-    )
     # Отправка сообщения пользователю
     await update.message.reply_html(
         rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
-    context.user_data["search_query"] = False
-
 
 async def help_command(update, context):
     """Отправка сообщения, когда пользователь вводит команду /help."""
@@ -97,17 +114,25 @@ def main():
     )
 
     application.add_handler(
+        MessageHandler(filters.Regex(f"^{settings.PASSWORD}$"), callback=admin)
+    )
+    application.add_handler(
+        MessageHandler(filters.Regex(f"^Выход$"), callback=admin_out)
+    )
+    application.add_handler(
         MessageHandler(filters.Regex("^Исполнители$"), callback=performers)
     )
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_event_\d*"))
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_card_\d*"))
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_back_\d*"))
     application.add_handler(CallbackQueryHandler(callback=performers_callback, pattern=r"performers_search_\d*"))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, performers_search_name))
+
 
     application.add_handler(
         MessageHandler(filters.Regex("^Обратная связь$"), callback=feedback)
     )
+
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, performers_search_name))
     # Запуск бота и ожидание его завершения пользователем (нажатие Ctrl-C).
     application.run_polling()
 
