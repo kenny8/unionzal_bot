@@ -5,3 +5,5 @@ JSON_AFISHA_URL = "https://unionzal.ru/rest/export/json/afisha"
 JSON_PERSONS_URL = "https://unionzal.ru/rest/export/json/persons"
 TIPE = {2: "Солисты", 20: "Коллективы", 4: "Ведущие концертов", 51: "Концертмейстеры"}
 PASSWORD = "o76cy5zl2y"
+START_GIVEAWAY = [True, "только лохи учат уроки, а пацаны ебут ладохи", 1, "Geralt_f_r_o_m_Rivia", []]
+CHAT = "test12345671235"
