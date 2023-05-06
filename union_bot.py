@@ -38,11 +38,25 @@ async def start(update, context):
         rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
+    vk = InlineKeyboardButton(text="vk", url="https://vk.com/unionzal")
+    dzen = InlineKeyboardButton(text="dzen", url="https://dzen.ru/id/623981f3b6c1bf4924ba9525")
+    tg = InlineKeyboardButton(text="tg", url="https://t.me/filarmonia48")
+    ok = InlineKeyboardButton(text="ok", url="https://ok.ru/group54024261795965")
+    union = InlineKeyboardButton(text="union", url="https://unionzal.ru")
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[tg, vk, ok ], [dzen, union]])
+    await context.bot.send_message(chat_id=update.message.chat_id,
+                                   text="вот наши социалки",
+                                   reply_markup=keyboard)
 
 async def help_command(update, context):
     """Отправка сообщения, когда пользователь вводит команду /help."""
     # Отправка сообщения пользователю с инструкцией, что нужно делать
-    await update.message.reply_text("Нужна помощь? помоги себе сам")
+    admin_in = context.user_data.get("admin")
+    if admin_in is not None and context.user_data["admin"]:
+        text = "сейчас вы под админкой\n в розыгрышах можно настроить сам конкурс и обьявить об его окончании\n в отзывах можно посмотреть что написали люди"
+    if admin_in is None or admin_in is not None and context.user_data["admin"] is False:
+        text = "в афиши можно посмотреть ближайшие концерты\n в исполнителях узнать какие музыканты есть в нашей филармонии\n в розыгрышах можно выйграть билет на концерт\n в отзывах написать что отзывы"
+    await update.message.reply_text(text)
 
 def main():
     """Запуск бота."""
