@@ -7,4 +7,5 @@ TIPE = {2: "Солисты", 20: "Коллективы", 4: "Ведущие ко
 PASSWORD = "o76cy5zl2y"
 START_GIVEAWAY = [True, "пример текста розыгрыша", 1, "Geralt_f_r_o_m_Rivia", []]
 FEEDBACK_USER = []
+USERS = []
 CHAT = "test12345671235"

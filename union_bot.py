@@ -38,6 +38,7 @@ async def start(update, context):
         rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
+    settings.USERS.append([user.username, update.effective_chat.id])
     vk = InlineKeyboardButton(text="vk", url="https://vk.com/unionzal")
     dzen = InlineKeyboardButton(text="dzen", url="https://dzen.ru/id/623981f3b6c1bf4924ba9525")
     tg = InlineKeyboardButton(text="tg", url="https://t.me/filarmonia48")
@@ -57,6 +58,11 @@ async def help_command(update, context):
     if admin_in is None or admin_in is not None and context.user_data["admin"] is False:
         text = "в афиши можно посмотреть ближайшие концерты\n в исполнителях узнать какие музыканты есть в нашей филармонии\n в розыгрышах можно выйграть билет на концерт\n в отзывах написать что отзывы"
     await update.message.reply_text(text)
+
+async def text_reader(update, context):
+    await giveaway_text(update, context)
+    await feedback_text(update, context)
+    await performers_search_name(update, context)
 
 def main():
     """Запуск бота."""
@@ -106,9 +112,7 @@ def main():
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_prev_\d+"))
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_next_\d+"))
 
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, feedback_text))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, giveaway_text))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, performers_search_name))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_reader))
     # Запуск бота и ожидание его завершения пользователем (нажатие Ctrl-C).
     application.run_polling()
 

@@ -48,6 +48,7 @@ async def giveaway_callback(update, context):
                 reply_markup=keyboard)
             query = update.callback_query
             context.user_data["giveaway_Text_start"] = True
+            print("qqqqqqqqqqqqqqqqq")
     elif data[1] == "admin" and data[2] == "stop":
         if data[3] == "0":
             settings.START_GIVEAWAY[0] = False
@@ -121,8 +122,6 @@ async def giveaway_callback(update, context):
                         message_id=query.message.message_id,
                         text='вы уже учавствуете'
                     )
-                print(username)
-
             else:
                 community_button = InlineKeyboardButton(text="Подписаться", url=f"t.me/{settings.CHAT}")
                 check_button = InlineKeyboardButton(text="Проверить", callback_data=f"giveaway_user_0_")
@@ -149,8 +148,8 @@ async def giveaway_callback(update, context):
                 message_id=query.message.message_id,
                 text="вы вошли в розыгрыши",
                 reply_markup=keyboard)
+            context.user_data["giveaway_Text_start"] = False
         if admin_in is None or admin_in is not None and context.user_data["admin"] is False:
-            print("test")
             if settings.START_GIVEAWAY[0]:
                 start_giveaway_button = InlineKeyboardButton(text="участвовать", callback_data=f"giveaway_user_0")
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[start_giveaway_button]])
@@ -170,7 +169,6 @@ async def giveaway_text(update, context):
     if search_query is not None:
         if context.user_data["giveaway_Text_start"]:
             user = update.effective_user
-            print(user.username)
             # Получение введенного пользователем имени
             text_admin = update.message.text
             text = f"розыгрыш начат \n текст: {text_admin}"
@@ -178,3 +176,5 @@ async def giveaway_text(update, context):
                                            text=text)
             context.user_data["giveaway_Text_start"] = False
             settings.START_GIVEAWAY = [True, text_admin, 1, user.username, []]
+            for participant in settings.USERS:
+                await context.bot.send_message(chat_id=participant[1], text=text)
