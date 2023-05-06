@@ -1,17 +1,9 @@
 
 from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    filters,
-    CallbackContext,
-)
 from telegram import InputMediaPhoto
 from json_parser import json_persons
 import settings
-
+from datetime import datetime
 
 
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
@@ -32,7 +24,14 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
 
 async def performers(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Исполнители'."""
-    persons_card = json_persons() # загрузка json
+    now = datetime.now()
+    time_diff = now - settings.PERSONS_CARD_TIME
+    hours_diff = time_diff.seconds // 3600
+    if hours_diff >= 12:
+        print("обновились персоналии")
+        settings.PERSONS_CARD = json_persons()
+        settings.PERSONS_CARD_TIME = now
+    persons_card = settings.PERSONS_CARD # загрузка json
     # Создание кнопок выбора выбора вида исполнителя
     #print(persons_card)
     persons = list(set(event[2] for event in persons_card))
@@ -116,27 +115,28 @@ async def performers_callback(update, context):
         context.user_data["search_query"] = False
 
 async def performers_search_name(update, context):
-    search_query = context.user_data.get("search_query")
-    if search_query is not None:
-        if context.user_data["search_query"]:
-            # Получение введенного пользователем имени
-            search_name = update.message.text
+    if context.user_data is not None:
+        search_query = context.user_data.get("search_query")
+        if search_query is not None:
+            if context.user_data["search_query"]:
+                # Получение введенного пользователем имени
+                search_name = update.message.text
 
-            # Получение карточек исполнителей из пользовательских данных
-            persons_card = context.user_data.get("persons_card")
+                # Получение карточек исполнителей из пользовательских данных
+                persons_card = context.user_data.get("persons_card")
 
-            # Фильтрация карточек исполнителей по имени
-            persons = [card for card in persons_card if search_name.lower() in card[0].lower()]
+                # Фильтрация карточек исполнителей по имени
+                persons = [card for card in persons_card if search_name.lower() in card[0].lower()]
 
-            if not persons:
-                text = "К сожалению, ничего не найдено. Попробуйте ввести другое имя."
-                await update.message.reply_text(text)
-            else:
-                for person in persons:
-                    # Вывод картинки, текста и кнопки ссылки на исполнителя
-                    button = InlineKeyboardButton(text="Ссылка", url=person[3])
-                    back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_back_")
-                    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button, back_button]])
-                    await context.bot.send_photo(chat_id=update.message.chat_id, photo=person[4], caption=person[0],
-                                                 reply_markup=keyboard)
-                context.user_data["search_query"] = False
+                if not persons:
+                    text = "К сожалению, ничего не найдено. Попробуйте ввести другое имя."
+                    await update.message.reply_text(text)
+                else:
+                    for person in persons:
+                        # Вывод картинки, текста и кнопки ссылки на исполнителя
+                        button = InlineKeyboardButton(text="Ссылка", url=person[3])
+                        back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_back_")
+                        keyboard = InlineKeyboardMarkup(inline_keyboard=[[button, back_button]])
+                        await context.bot.send_photo(chat_id=update.message.chat_id, photo=person[4], caption=person[0],
+                                                     reply_markup=keyboard)
+                    context.user_data["search_query"] = False

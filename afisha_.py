@@ -1,6 +1,7 @@
 import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InputMediaPhoto
+from datetime import datetime
 from json_parser import json_afisha
 
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
@@ -21,9 +22,16 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
 
 
 async def afisha(update, context):
-
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Афиша'."""
-    afisha_card = json_afisha() # загрузка json
+    # Получаем текущее время
+    now = datetime.now()
+    time_diff = now - settings.AFISHA_CARD_TIME
+    hours_diff = time_diff.seconds // 3600
+    if hours_diff >= 12:
+        print("обновились афиши")
+        settings.AFISHA_CARD = json_afisha()
+        settings.AFISHA_CARD_TIME = now
+    afisha_card = settings.AFISHA_CARD # загрузка json
     # Создание кнопок выбора даты концерта
     #print(afisha_card)
     buttons = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")

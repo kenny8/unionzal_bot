@@ -1,4 +1,3 @@
-
 import logging
 from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -15,6 +14,7 @@ from performers import performers, performers_callback, performers_search_name
 from giveaway import giveaway, giveaway_callback, giveaway_text
 from feedback import feedback, feedback_callback, feedback_text
 from admin import admin_out, admin
+from datetime import datetime
 
 # Включение логгирования
 logging.basicConfig(
@@ -31,6 +31,7 @@ reply_keyboard = ReplyKeyboardMarkup(
 
 # Определение обработчиков команд. Обычно они принимают два аргумента: update и context.
 async def start(update, context):
+    print(datetime.now())
     """Отправка сообщения, когда пользователь вводит команду /start."""
     user = update.effective_user
     # Отправка сообщения пользователю
@@ -38,7 +39,11 @@ async def start(update, context):
         rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
-    settings.USERS.append([user.username, update.effective_chat.id])
+    if update.effective_chat.id not in [chat[1] for chat in settings.USERS]:
+        settings.USERS.append([user.username, update.effective_chat.id])
+    else:
+        index = [chat[1] for chat in settings.USERS].index(update.effective_chat.id)
+        settings.USERS[index] = [user.username, update.effective_chat.id]
     vk = InlineKeyboardButton(text="vk", url="https://vk.com/unionzal")
     dzen = InlineKeyboardButton(text="dzen", url="https://dzen.ru/id/623981f3b6c1bf4924ba9525")
     tg = InlineKeyboardButton(text="tg", url="https://t.me/filarmonia48")
@@ -66,6 +71,7 @@ async def text_reader(update, context):
 
 def main():
     """Запуск бота."""
+
     # Создание приложения и передача ему токена вашего бота.
     application = Application.builder().token(settings.TOKEN_BOT).build()
     # Назначение обработчиков на различные команды в Telegram.

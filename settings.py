@@ -1,3 +1,6 @@
+from json_parser import json_afisha, json_persons
+from datetime import datetime
+
 MAX_MESSAGE_LENGTH = 900
 MAIN_WALLPAPERS = "https://unionzal.ru/sites/default/files/2020-11/presentation-wrapper.jpg"
 TOKEN_BOT = "6241891253:AAEtTI5Ma8z34FM3fOusBJoLqI7xtRGLnTU"
@@ -9,3 +12,8 @@ START_GIVEAWAY = [True, "пример текста розыгрыша", 1, "Gera
 FEEDBACK_USER = []
 USERS = []
 CHAT = "test12345671235"
+now = datetime.now()
+AFISHA_CARD = json_afisha()
+PERSONS_CARD = json_persons()
+AFISHA_CARD_TIME = PERSONS_CARD_TIME = now
+print(AFISHA_CARD_TIME)

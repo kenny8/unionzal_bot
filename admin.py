@@ -1,6 +1,9 @@
 
 from telegram import ReplyKeyboardMarkup
 
+import settings
+
+
 async def admin(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку для входа в админку."""
     # Отправка сообщения пользователю с клавиатурой выбора даты концерта
@@ -11,7 +14,7 @@ async def admin(update, context):
         [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь", "Выход"]]
     )
     await context.bot.send_message(chat_id=update.message.chat_id,
-                                   text="вы вошли в админку",
+                                   text=f"вы вошли в админку\nинтересный факт, столько пользователей пользуютя ботом: {len(settings.USERS)}",
                                    reply_markup=reply_keyboard)
     context.user_data["admin"] = True
 

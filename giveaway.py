@@ -23,7 +23,7 @@ async def giveaway(update, context):
     if admin_in is None or admin_in is not None and context.user_data["admin"] is False:
         print("test")
         if settings.START_GIVEAWAY[0]:
-            start_giveaway_button = InlineKeyboardButton(text="участвовать", callback_data=f"giveaway_user_0")
+            start_giveaway_button = InlineKeyboardButton(text="участвовать", callback_data=f"giveaway_user_0_0")
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[start_giveaway_button]])
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text=settings.START_GIVEAWAY[1],
@@ -123,12 +123,22 @@ async def giveaway_callback(update, context):
                         text='вы уже учавствуете'
                     )
             else:
+                if data[3] == "1":
+                    text = f"Извените но вы не подписались, подпишитесь на канал t.me/{settings.CHAT}, чтобы принять участие в розыгрыше."
+                    check_button = InlineKeyboardButton(text="Проверить", callback_data=f"giveaway_user_0_2")
+                else:
+                    text = f"Пожалуйста, подпишитесь на канал t.me/{settings.CHAT}, чтобы принять участие в розыгрыше."
+                    check_button = InlineKeyboardButton(text="Проверить", callback_data=f"giveaway_user_0_1")
                 community_button = InlineKeyboardButton(text="Подписаться", url=f"t.me/{settings.CHAT}")
-                check_button = InlineKeyboardButton(text="Проверить", callback_data=f"giveaway_user_0_")
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[community_button, check_button]])
-                await context.bot.send_message(chat_id=chat_id,
-                                               text=f"Пожалуйста, подпишитесь на канал t.me/{settings.CHAT}, чтобы принять участие в розыгрыше.",
-                                               reply_markup=keyboard)
+                if data[3] != "2":
+                    await context.bot.edit_message_text(
+                        chat_id=chat_id,
+                        message_id=query.message.message_id,
+                        text=text,
+                        reply_markup=keyboard)
+
+
     if data[1] == "back":
         admin_in = context.user_data.get("admin")
         if admin_in is not None and context.user_data["admin"]:
@@ -165,16 +175,17 @@ async def giveaway_callback(update, context):
                     text="пока нет розыгрышей")
 
 async def giveaway_text(update, context):
-    search_query = context.user_data.get("giveaway_Text_start")
-    if search_query is not None:
-        if context.user_data["giveaway_Text_start"]:
-            user = update.effective_user
-            # Получение введенного пользователем имени
-            text_admin = update.message.text
-            text = f"розыгрыш начат \n текст: {text_admin}"
-            await context.bot.send_message(chat_id=update.message.chat_id,
-                                           text=text)
-            context.user_data["giveaway_Text_start"] = False
-            settings.START_GIVEAWAY = [True, text_admin, 1, user.username, []]
-            for participant in settings.USERS:
-                await context.bot.send_message(chat_id=participant[1], text=text)
+    if context.user_data is not None:
+        search_query = context.user_data.get("giveaway_Text_start")
+        if search_query is not None:
+            if context.user_data["giveaway_Text_start"]:
+                user = update.effective_user
+                # Получение введенного пользователем имени
+                text_admin = update.message.text
+                text = f"розыгрыш начат \n текст: {text_admin}"
+                await context.bot.send_message(chat_id=update.message.chat_id,
+                                               text=text)
+                context.user_data["giveaway_Text_start"] = False
+                settings.START_GIVEAWAY = [True, text_admin, 1, user.username, []]
+                for participant in settings.USERS:
+                    await context.bot.send_message(chat_id=participant[1], text=text)
