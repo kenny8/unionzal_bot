@@ -11,7 +11,8 @@ async def admin(update, context):
     print(user.username)
     global reply_keyboard
     reply_keyboard = ReplyKeyboardMarkup(
-        [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь", "Выход"]]
+        [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь", "Выход"]],
+        resize_keyboard=True,  # изменить размер клавиатуры
     )
     await context.bot.send_message(chat_id=update.message.chat_id,
                                    text=f"вы вошли в админку\nинтересный факт, столько пользователей пользуютя ботом: {len(settings.USERS)}",
@@ -19,12 +20,16 @@ async def admin(update, context):
     context.user_data["admin"] = True
 
 async def admin_out(update, context):
-    if context.user_data["admin"]:
-        global reply_keyboard
-        reply_keyboard = ReplyKeyboardMarkup(
-            [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]]
-        )
-        await context.bot.send_message(chat_id=update.message.chat_id,
-                                       text="вы вышли из админки",
-                                       reply_markup=reply_keyboard)
-        context.user_data["admin"] = False
+    if context.user_data is not None:
+        search_query = context.user_data.get("admin")
+        if search_query is not None:
+            if context.user_data["admin"]:
+                global reply_keyboard
+                reply_keyboard = ReplyKeyboardMarkup(
+                    [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]],
+                    resize_keyboard=True,  # изменить размер клавиатуры
+                )
+                await context.bot.send_message(chat_id=update.message.chat_id,
+                                               text="вы вышли из админки",
+                                               reply_markup=reply_keyboard)
+                context.user_data["admin"] = False

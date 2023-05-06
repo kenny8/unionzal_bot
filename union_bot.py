@@ -26,7 +26,8 @@ logger = logging.getLogger(__name__)
 
 # Создание разметки клавиатуры для меню
 reply_keyboard = ReplyKeyboardMarkup(
-    [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]]
+    [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]],
+    resize_keyboard=True, # изменить размер клавиатуры
 )
 
 
@@ -74,7 +75,6 @@ async def text_reader(update, context):
 
 def main():
     """Запуск бота."""
-
     # Создание приложения и передача ему токена вашего бота.
     application = Application.builder().token(settings.TOKEN_BOT).build()
     # Назначение обработчиков на различные команды в Telegram.
