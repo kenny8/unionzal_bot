@@ -4,6 +4,21 @@ from telegram import InputMediaPhoto
 from json_parser import json_persons
 import settings
 from datetime import datetime
+import logging
+
+# Включение логгирования
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
+
+def log_user_action(func):
+    def wrapper(update, context, *args, **kwargs):
+        user = update.effective_user
+        logger.info(f"Пользователь {user.username} вызвал функцию {func.__name__}")
+        return func(update, context, *args, **kwargs)
+    return wrapper
 
 
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
@@ -22,6 +37,7 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
         menu.append(footer_buttons)
     return menu
 
+@log_user_action
 async def performers(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Исполнители'."""
     now = datetime.now()
@@ -46,8 +62,7 @@ async def performers(update, context):
     # Сохранение данных персоналий в пользовательскую базу данных бота
     context.user_data["persons_card"] = persons_card
 
-
-
+@log_user_action
 async def performers_callback(update, context):
     query = update.callback_query
     data = query.data.split("_")
@@ -71,8 +86,6 @@ async def performers_callback(update, context):
         # Изменение клавиатуры для карточки исполнителя
         persons_card = context.user_data.get("persons_card")
         persons = [card for card in persons_card if card[2] == data[2]]
-        #print(card)
-        print(persons[int(data[3])])
         # Вывод картинки, текста и кнопки ссылки на исполнителя
         button = InlineKeyboardButton(text="Ссылка", url=persons[int(data[3])][3])
         back_button = InlineKeyboardButton(text="назад", callback_data=f"performers_event_{data[2]}")
@@ -114,6 +127,7 @@ async def performers_callback(update, context):
                                              reply_markup=keyboard)
         context.user_data["search_query"] = False
 
+@log_user_action
 async def performers_search_name(update, context):
     if context.user_data is not None:
         search_query = context.user_data.get("search_query")

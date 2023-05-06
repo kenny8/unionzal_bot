@@ -1,14 +1,17 @@
-
+import logging
 from telegram import ReplyKeyboardMarkup
-
 import settings
-
+# Включение логгирования
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
 
 async def admin(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку для входа в админку."""
     # Отправка сообщения пользователю с клавиатурой выбора даты концерта
     user = update.effective_user
-    print(user.username)
     global reply_keyboard
     reply_keyboard = ReplyKeyboardMarkup(
         [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь", "Выход"]],
@@ -18,6 +21,9 @@ async def admin(update, context):
                                    text=f"вы вошли в админку\nинтересный факт, столько пользователей пользуютя ботом: {len(settings.USERS)}",
                                    reply_markup=reply_keyboard)
     context.user_data["admin"] = True
+    admin_status = context.user_data.get("admin", False)
+    logger.info(
+        f"Пользователь {update.effective_user.username} вызвал функцию {admin.__name__}. Статус админа: {admin_status}")
 
 async def admin_out(update, context):
     if context.user_data is not None:
@@ -33,3 +39,6 @@ async def admin_out(update, context):
                                                text="вы вышли из админки",
                                                reply_markup=reply_keyboard)
                 context.user_data["admin"] = False
+                admin_status = context.user_data.get("admin", False)
+                logger.info(
+                    f"Пользователь {update.effective_user.username} вызвал функцию {admin_out.__name__}. Статус админа: {admin_status}")

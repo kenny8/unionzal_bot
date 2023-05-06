@@ -5,9 +5,10 @@ import re  # модуль для работы с регулярными выра
 from bs4 import BeautifulSoup  # библиотека для парсинга HTML-страниц
 from datetime import datetime, time #для работы с временим
 import settings
+import time as tm
 
-def json_afisha() -> None:
-    import time as tm
+def json_afisha():
+
     # выполнение HTTP-запроса и проверка на ошибки
     try:
         response = requests.get(settings.JSON_AFISHA_URL)
@@ -40,11 +41,11 @@ def json_afisha() -> None:
             'value']  # получаем ссылку на покупку билетов мероприятия
         afisha.extend([title, txt, time_start, time_end, banner, ticket])
         afisha_card.append(afisha)
-    print(afisha_card)
+    #print(afisha_card)
     return sorted(afisha_card, key=lambda x: datetime.strptime(x[2][0], '%d.%m.%y'))
 
-def json_persons() -> None:
-    import time as tm
+
+def json_persons():
     # выполнение HTTP-запроса и проверка на ошибки
     try:
         response = requests.get(settings.JSON_PERSONS_URL)
@@ -55,7 +56,6 @@ def json_persons() -> None:
     data = json.loads(response.text)  # преобразуем полученные данные в формат JSON
     persons_card = []  # список для хранения полученной информации
     # обработка данных из формата JSON и сохранение в списке persons_card
-    #print(data)
     for item in data:
         persons = []
         persons_name = item['title'][0]['value'] # получаем имя персоны, если оно есть
@@ -70,5 +70,5 @@ def json_persons() -> None:
         #print(persons_image)
         persons.extend([persons_name, persons_description, persons_tags, persons_url, persons_image])
         persons_card.append(persons)  # добавляем полученную информацию в список persons_card
-        #print(persons)
+    #print(persons_card)
     return persons_card

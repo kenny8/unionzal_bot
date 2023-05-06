@@ -3,6 +3,21 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InputMediaPhoto
 from datetime import datetime
 from json_parser import json_afisha
+import logging
+
+# Включение логгирования
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
+
+def log_user_action(func):
+    def wrapper(update, context, *args, **kwargs):
+        user = update.effective_user
+        logger.info(f"Пользователь {user.username} вызвал функцию {func.__name__}")
+        return func(update, context, *args, **kwargs)
+    return wrapper
 
 def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     """
@@ -21,6 +36,7 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     return menu
 
 
+@log_user_action
 async def afisha(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Афиша'."""
     # Получаем текущее время
@@ -33,7 +49,6 @@ async def afisha(update, context):
         settings.AFISHA_CARD_TIME = now
     afisha_card = settings.AFISHA_CARD # загрузка json
     # Создание кнопок выбора даты концерта
-    #print(afisha_card)
     buttons = [InlineKeyboardButton(text=event[2][0], callback_data=f"afisha_event_{event[2][0]}")
                              for event in afisha_card]
     keyboard = InlineKeyboardMarkup(inline_keyboard=build_menu(buttons, n_cols=2))
@@ -41,11 +56,12 @@ async def afisha(update, context):
     await context.bot.send_photo(chat_id=update.message.chat_id, photo=settings.MAIN_WALLPAPERS, caption="Выберите дату концерта", reply_markup=keyboard)
     # Сохранение данных афиши в пользовательскую базу данных бота
     context.user_data["afisha_card"] = afisha_card
+
+@log_user_action
 async def afisha_callback(update, context):
     """Отправка сообщения с заголовком и текстом события, выбранного пользователем."""
     query = update.callback_query
     await query.answer()
-    print(query.data.split("_")[2])
     # Получение выбранного события
     selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[2]][0]
     # Создание кнопок
@@ -63,10 +79,10 @@ async def afisha_callback(update, context):
                                          media=InputMediaPhoto(selected_event[4], caption=text),
                                          reply_markup=markup)
 
+@log_user_action
 async def more_info_callback(update, context):
     """Редактирование сообщения, добавление подробной информации о выбранном событии."""
     query = update.callback_query
-    print(query.data.split("_"))
     await query.answer()
     # Получение выбранного события
     selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[3]][0]
@@ -92,10 +108,10 @@ async def more_info_callback(update, context):
                                          media=InputMediaPhoto(selected_event[4], caption=text),
                                          reply_markup=markup)
 
+@log_user_action
 async def read_more_callback(update, context):
     """Редактирование сообщения, добавление подробной информации о выбранном событии."""
     query = update.callback_query
-    print(query.data.split("_"))
     await query.answer()
     # Получение выбранного события
     selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[3]][0]
@@ -112,11 +128,12 @@ async def read_more_callback(update, context):
     await context.bot.edit_message_media(chat_id=query.message.chat_id, message_id=query.message.message_id,
                                          media=InputMediaPhoto(selected_event[4], caption=text),
                                          reply_markup=markup)
+
+@log_user_action
 async def prev_callback(update, context):
     """Переход к предыдущему событию в списке afisha_card."""
     query = update.callback_query
     await query.answer()
-    print(query.data.split("_"))
     # Получение выбранного события
     selected_event = [event for event in context.user_data["afisha_card"] if event[2][0] == query.data.split("_")[2]][0]
     # Поиск индекса выбранного события в списке
@@ -146,11 +163,11 @@ async def prev_callback(update, context):
         # Если выбранное событие первое в списке, то просто отправляем сообщение без изменений
         await query.message.answer(text="Вы находитесь на первом событии.")
 
+@log_user_action
 async def next_callback(update, context):
     """Обработка нажатия на кнопку 'Следующее событие'."""
     query = update.callback_query
     await query.answer()
-    print(query.data.split("_"))
     # Получение списка всех событий
     events = context.user_data["afisha_card"]
     # Получение индекса текущего события

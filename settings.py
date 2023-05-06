@@ -36,4 +36,4 @@ now = datetime.now()
 AFISHA_CARD = json_afisha()
 PERSONS_CARD = json_persons()
 AFISHA_CARD_TIME = PERSONS_CARD_TIME = now
-print(AFISHA_CARD_TIME)
+#print(AFISHA_CARD_TIME)

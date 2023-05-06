@@ -24,6 +24,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Декоратор для логирования вызова функции
+def log_user_action(func):
+    def wrapper(update, context, *args, **kwargs):
+        user = update.effective_user
+        logger.info(f"Пользователь {user.username} вызвал функцию {func.__name__}")
+        return func(update, context, *args, **kwargs)
+    return wrapper
+
 # Создание разметки клавиатуры для меню
 reply_keyboard = ReplyKeyboardMarkup(
     [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]],
@@ -32,8 +40,9 @@ reply_keyboard = ReplyKeyboardMarkup(
 
 
 # Определение обработчиков команд. Обычно они принимают два аргумента: update и context.
+# Функция обработки команды /start с декоратором логирования
+@log_user_action
 async def start(update, context):
-    print(datetime.now())
     """Отправка сообщения, когда пользователь вводит команду /start."""
     user = update.effective_user
     # Отправка сообщения пользователю
@@ -57,7 +66,8 @@ async def start(update, context):
     await context.bot.send_message(chat_id=update.message.chat_id,
                                    text="вот наши социалки",
                                    reply_markup=keyboard)
-
+# Функция обработки команды /help с декоратором логирования
+@log_user_action
 async def help_command(update, context):
     """Отправка сообщения, когда пользователь вводит команду /help."""
     # Отправка сообщения пользователю с инструкцией, что нужно делать

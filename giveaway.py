@@ -3,7 +3,23 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 import settings
 import pickle
+import logging
 
+# Включение логгирования
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
+
+def log_user_action(func):
+    def wrapper(update, context, *args, **kwargs):
+        user = update.effective_user
+        logger.info(f"Пользователь {user.username} вызвал функцию {func.__name__}")
+        return func(update, context, *args, **kwargs)
+    return wrapper
+
+@log_user_action
 async def giveaway(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Розыгрыш билетов'."""
     admin_in = context.user_data.get("admin")
@@ -22,7 +38,6 @@ async def giveaway(update, context):
                                        text="вы вошли в розыгрыши",
                                        reply_markup=keyboard)
     if admin_in is None or admin_in is not None and context.user_data["admin"] is False:
-        print("test")
         if settings.START_GIVEAWAY[0]:
             start_giveaway_button = InlineKeyboardButton(text="участвовать", callback_data=f"giveaway_user_0_0")
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[start_giveaway_button]])
@@ -33,10 +48,10 @@ async def giveaway(update, context):
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text="пока нет розыгрышей")
 
+@log_user_action
 async def giveaway_callback(update, context):
     query = update.callback_query
     data = query.data.split("_")
-    print(data)
     if data[1] == "admin" and data[2] == "start":
         if data[3] == "0":
             text = "введите текст розыгрыша"
@@ -49,7 +64,6 @@ async def giveaway_callback(update, context):
                 reply_markup=keyboard)
             query = update.callback_query
             context.user_data["giveaway_Text_start"] = True
-            print("qqqqqqqqqqqqqqqqq")
     elif data[1] == "admin" and data[2] == "stop":
         if data[3] == "0":
             settings.START_GIVEAWAY[0] = False
@@ -61,14 +75,11 @@ async def giveaway_callback(update, context):
             )
             text_stop = "розыгрышь закончен по техническим причинам"
             for participant in settings.START_GIVEAWAY[4]:
-                print(participant)
                 text = text_stop
                 await context.bot.send_message(chat_id=participant[1], text=text)
             with open(settings.GIVEAWAY_TXT, 'wb') as file:
                 pickle.dump(settings.START_GIVEAWAY, file)
         elif data[3] == "1":
-            print("answer")
-            print(settings.START_GIVEAWAY)
             if len(settings.START_GIVEAWAY[4]) > 0:
                 winner = random.choice(settings.START_GIVEAWAY[4])
                 settings.START_GIVEAWAY[0] = False
@@ -82,7 +93,6 @@ async def giveaway_callback(update, context):
                 text_winner = f"Розыгрыш закончен. Вы победили, обращатся по поводу победы : @{settings.START_GIVEAWAY[3]}"
                 text_loser = "К сожалению, вы не выиграли в розыгрыше."
                 for participant in settings.START_GIVEAWAY[4]:
-                    print(participant)
                     text = text_winner if participant == winner else text_loser
                     await context.bot.send_message(chat_id=participant[1], text=text)
                 with open(settings.GIVEAWAY_TXT, 'wb') as file:
@@ -183,6 +193,7 @@ async def giveaway_callback(update, context):
                     message_id=query.message.message_id,
                     text="пока нет розыгрышей")
 
+@log_user_action
 async def giveaway_text(update, context):
     if context.user_data is not None:
         search_query = context.user_data.get("giveaway_Text_start")

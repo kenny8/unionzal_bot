@@ -1,6 +1,24 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import settings
 import pickle
+import logging
+import functools
+
+# Включение логгирования
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
+
+def log_user_action(func):
+    def wrapper(update, context, *args, **kwargs):
+        user = update.effective_user
+        logger.info(f"Пользователь {user.username} вызвал функцию {func.__name__}")
+        return func(update, context, *args, **kwargs)
+    return wrapper
+
+@log_user_action
 async def feedback(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Обратная связь'."""
     admin_in = context.user_data.get("admin")
@@ -20,19 +38,17 @@ async def feedback(update, context):
             text = "отзывов нету"
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text=text)
-        print("lol")
     if admin_in is None or admin_in is not None and context.user_data["admin"] is False:
         user = update.effective_user
-        print(user.username)
         text = "напишите свой отзыв/проблему с которой столкнулись"
         await context.bot.send_message(chat_id=update.message.chat_id,
                                        text=text)
         context.user_data["feedback"] = True
 
+@log_user_action
 async def feedback_callback(update, context):
     query = update.callback_query
     data = query.data.split("_")
-    print(data)
     if data[1] == "delete":
         if len(settings.FEEDBACK_USER) > 0:
             settings.FEEDBACK_USER[int(data[2])] = None  # заменяем элемент на None
@@ -117,13 +133,13 @@ async def feedback_callback(update, context):
         )
 
 
+@log_user_action
 async def feedback_text(update, context):
     if context.user_data is not None:
         search_query = context.user_data.get("feedback")
         if search_query is not None:
             if context.user_data["feedback"]:
                 user = update.effective_user
-                print(user.username)
                 # Получение введенного пользователем имени
                 text_feedback = update.message.text
                 text = f"Ваше мнение для нас очень важно, но не очень то и нужно"  # незабудь исправить а то лажа будет
