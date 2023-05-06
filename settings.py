@@ -10,19 +10,25 @@ JSON_PERSONS_URL = "https://unionzal.ru/rest/export/json/persons"
 TIPE = {2: "Солисты", 20: "Коллективы", 4: "Ведущие концертов", 51: "Концертмейстеры"}
 PASSWORD = "o76cy5zl2y"
 
-START_GIVEAWAY = [True, "пример текста розыгрыша", 1, "Geralt_f_r_o_m_Rivia", []]
+FEEDBACK_TXT = 'feedback_fl.txt'
+USERS_TXT = 'users_chat_fl.txt'
+GIVEAWAY_TXT = 'giveway_fl.txt'
 
-FEEDBACK_USER = [["@Geralt_f_r_o_m_Rivia", "1 сообщение"], ["@Geralt_f_r_o_m_Rivia", "2 сообщение"], ["@Geralt_f_r_o_m_Rivia", "3 сообщение"]]
+START_GIVEAWAY = []
+with open(GIVEAWAY_TXT, 'rb') as file:
+    START_GIVEAWAY = pickle.load(file)
 
-with open('feedback_fl.txt', 'wb') as file:
-    pickle.dump(FEEDBACK_USER, file)
-
-USERS = []
-
-with open('feedback_fl.txt', 'rb') as file:
+FEEDBACK_USER = []
+with open(FEEDBACK_TXT, 'rb') as file:
     FEEDBACK_USER = pickle.load(file)
 
+USERS = []
+with open(USERS_TXT, 'rb') as file:
+    USERS = pickle.load(file)
+
 print(FEEDBACK_USER)
+print(USERS)
+print(START_GIVEAWAY)
 
 CHAT = "test12345671235"
 

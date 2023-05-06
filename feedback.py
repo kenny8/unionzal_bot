@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import settings
-
+import pickle
 async def feedback(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Обратная связь'."""
     admin_in = context.user_data.get("admin")
@@ -57,6 +57,8 @@ async def feedback_callback(update, context):
                 text=text,
                 reply_markup=keyboard
             )
+            with open('feedback_fl.txt', 'wb') as file:
+                pickle.dump(settings.FEEDBACK_USER, file)
 
         else:
             text = f"больше отзывов нету"
@@ -129,3 +131,5 @@ async def feedback_text(update, context):
                                                text=text)
                 context.user_data["feedback"] = False
                 settings.FEEDBACK_USER.append(["@" + str(user.username), text_feedback])
+                with open(settings.FEEDBACK_TXT, 'wb') as file:
+                    pickle.dump(settings.FEEDBACK_USER, file)

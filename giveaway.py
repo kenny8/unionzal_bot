@@ -2,6 +2,7 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 import settings
+import pickle
 
 async def giveaway(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Розыгрыш билетов'."""
@@ -63,6 +64,8 @@ async def giveaway_callback(update, context):
                 print(participant)
                 text = text_stop
                 await context.bot.send_message(chat_id=participant[1], text=text)
+            with open(settings.GIVEAWAY_TXT, 'wb') as file:
+                pickle.dump(settings.START_GIVEAWAY, file)
         elif data[3] == "1":
             print("answer")
             print(settings.START_GIVEAWAY)
@@ -82,6 +85,8 @@ async def giveaway_callback(update, context):
                     print(participant)
                     text = text_winner if participant == winner else text_loser
                     await context.bot.send_message(chat_id=participant[1], text=text)
+                with open(settings.GIVEAWAY_TXT, 'wb') as file:
+                    pickle.dump(settings.START_GIVEAWAY, file)
             else:
                 settings.START_GIVEAWAY[0] = False
                 text = f"розыгрышь закончен\n участников не было"
@@ -90,6 +95,8 @@ async def giveaway_callback(update, context):
                     message_id=query.message.message_id,
                     text=text
                 )
+                with open(settings.GIVEAWAY_TXT, 'wb') as file:
+                    pickle.dump(settings.START_GIVEAWAY, file)
         if data[3] == "2":
             text = f"количество участников: {len(settings.START_GIVEAWAY[4])}"
             start_giveaway_button = InlineKeyboardButton(text="назад", callback_data=f"giveaway_back_")
@@ -116,6 +123,8 @@ async def giveaway_callback(update, context):
                         text='вы присоединились к розыгрышу'
                     )
                     settings.START_GIVEAWAY[4].append([user.username, chat_id])
+                    with open(settings.GIVEAWAY_TXT, 'wb') as file:
+                        pickle.dump(settings.START_GIVEAWAY, file)
                 else:
                     await context.bot.edit_message_text(
                         chat_id=chat_id,
@@ -183,9 +192,12 @@ async def giveaway_text(update, context):
                 # Получение введенного пользователем имени
                 text_admin = update.message.text
                 text = f"розыгрыш начат \n текст: {text_admin}"
+                text1 = f"розыгрыш начат \n {text_admin}"
                 await context.bot.send_message(chat_id=update.message.chat_id,
                                                text=text)
                 context.user_data["giveaway_Text_start"] = False
                 settings.START_GIVEAWAY = [True, text_admin, 1, user.username, []]
                 for participant in settings.USERS:
-                    await context.bot.send_message(chat_id=participant[1], text=text)
+                    await context.bot.send_message(chat_id=participant[1], text=text1)
+                with open(settings.GIVEAWAY_TXT, 'wb') as file:
+                    pickle.dump(settings.START_GIVEAWAY, file)

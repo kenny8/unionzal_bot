@@ -15,6 +15,7 @@ from giveaway import giveaway, giveaway_callback, giveaway_text
 from feedback import feedback, feedback_callback, feedback_text
 from admin import admin_out, admin
 from datetime import datetime
+import pickle
 
 # Включение логгирования
 logging.basicConfig(
@@ -44,6 +45,8 @@ async def start(update, context):
     else:
         index = [chat[1] for chat in settings.USERS].index(update.effective_chat.id)
         settings.USERS[index] = [user.username, update.effective_chat.id]
+    with open(settings.USERS_TXT, 'wb') as file:
+        pickle.dump(settings.USERS, file)
     vk = InlineKeyboardButton(text="vk", url="https://vk.com/unionzal")
     dzen = InlineKeyboardButton(text="dzen", url="https://dzen.ru/id/623981f3b6c1bf4924ba9525")
     tg = InlineKeyboardButton(text="tg", url="https://t.me/filarmonia48")
