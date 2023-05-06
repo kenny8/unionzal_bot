@@ -9,7 +9,10 @@ async def feedback(update, context):
             text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n пользователь: {settings.FEEDBACK_USER[0][0]} \n\n {settings.FEEDBACK_USER[0][1]}"
             delete_feedback_button = InlineKeyboardButton(text="удалить", callback_data=f"feedback_delete_0")
             next_feedback_button = InlineKeyboardButton(text=">", callback_data=f"feedback_next_1")
-            keyboard = InlineKeyboardMarkup(inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
+            if len(settings.FEEDBACK_USER) == 1:
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[])
+            else:
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text=text,
                                            reply_markup=keyboard)
@@ -32,32 +35,29 @@ async def feedback_callback(update, context):
     print(data)
     if data[1] == "delete":
         if len(settings.FEEDBACK_USER) > 0:
-            text = f"удалено"
             settings.FEEDBACK_USER[int(data[2])] = None  # заменяем элемент на None
             del settings.FEEDBACK_USER[int(data[2])]  # удаляем элемент None из списка
-            if data[2] == 1:
-                next_feedback_button = InlineKeyboardButton(text=">",
-                                                            callback_data=f"feedback_next_{int(data[2]) + 1}")  # Изменить значение data[2] для следующей карточки
+            next_feedback_button = InlineKeyboardButton(text="вернутся",
+                                                        callback_data=f"feedback_next_0")  # Изменить значение data[2] для следующей карточки
+            if len(settings.FEEDBACK_USER) == 0:
+                keyboard = InlineKeyboardMarkup(
+                    inline_keyboard=[])
+            else:
                 keyboard = InlineKeyboardMarkup(
                     inline_keyboard=[[next_feedback_button]])
-            elif int(data[2]) == len(settings.FEEDBACK_USER) - 1:
-                prev_feedback_button = InlineKeyboardButton(text="<",
-                                                            callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
-                keyboard = InlineKeyboardMarkup(
-                    inline_keyboard=[[prev_feedback_button]])
+            text1 = f"удалено"
+            text2 =  f"больше отзывов нету"
+            if len(settings.FEEDBACK_USER) == 0:
+                text = text2
             else:
-                prev_feedback_button = InlineKeyboardButton(text="<",
-                                                            callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
-                next_feedback_button = InlineKeyboardButton(text=">",
-                                                            callback_data=f"feedback_next_{int(data[2]) + 1}")  # Изменить значение data[2] для следующей карточки
-                keyboard = InlineKeyboardMarkup(
-                    inline_keyboard=[[prev_feedback_button, next_feedback_button]])
+                text = text1
             await context.bot.edit_message_text(
                 chat_id=query.message.chat_id,
                 message_id=query.message.message_id,
                 text=text,
                 reply_markup=keyboard
             )
+
         else:
             text = f"больше отзывов нету"
             await context.bot.edit_message_text(
@@ -70,12 +70,15 @@ async def feedback_callback(update, context):
         delete_feedback_button = InlineKeyboardButton(text="удалить", callback_data=f"feedback_delete_{data[2]}")
         next_feedback_button = InlineKeyboardButton(text=">",
                                                     callback_data=f"feedback_next_{int(data[2]) + 1}")  # Изменить значение data[2] для следующей карточки
-        if data[2] == 0:
+        prev_feedback_button = InlineKeyboardButton(text="<",
+                                                    callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
+        if data[2] == "0":
             keyboard = InlineKeyboardMarkup(
                 inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
+        elif len(settings.FEEDBACK_USER) == 1:
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[[delete_feedback_button]])
         else:
-            prev_feedback_button = InlineKeyboardButton(text="<",
-                                                        callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
             keyboard = InlineKeyboardMarkup(
                 inline_keyboard=[[delete_feedback_button], [prev_feedback_button, next_feedback_button]])
         await context.bot.edit_message_text(
@@ -89,12 +92,18 @@ async def feedback_callback(update, context):
         delete_feedback_button = InlineKeyboardButton(text="удалить", callback_data=f"feedback_delete_{data[2]}")
         next_feedback_button = InlineKeyboardButton(text=">",
                                                     callback_data=f"feedback_next_{int(data[2]) + 1}")  # Изменить значение data[2] для следующей карточки
-        if data[2] == 0:
+        prev_feedback_button = InlineKeyboardButton(text="<",
+                                                    callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
+        if len(settings.FEEDBACK_USER) == 1:
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[[delete_feedback_button]])
+        elif data[2] == str(len(settings.FEEDBACK_USER)-1):
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[[delete_feedback_button], [prev_feedback_button]])
+        elif data[2] == "0":
             keyboard = InlineKeyboardMarkup(
                 inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
         else:
-            prev_feedback_button = InlineKeyboardButton(text="<",
-                                                        callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
             keyboard = InlineKeyboardMarkup(
                 inline_keyboard=[[delete_feedback_button], [prev_feedback_button, next_feedback_button]])
 
