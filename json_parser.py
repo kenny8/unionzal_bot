@@ -41,7 +41,7 @@ def json_afisha():
             'value']  # получаем ссылку на покупку билетов мероприятия
         afisha.extend([title, txt, time_start, time_end, banner, ticket])
         afisha_card.append(afisha)
-    #print(afisha_card)
+    print(afisha_card)
     return sorted(afisha_card, key=lambda x: datetime.strptime(x[2][0], '%d.%m.%y'))
 
 

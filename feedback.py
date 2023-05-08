@@ -142,7 +142,7 @@ async def feedback_text(update, context):
                 user = update.effective_user
                 # Получение введенного пользователем имени
                 text_feedback = update.message.text
-                text = f"Ваше мнение для нас очень важно, но не очень то и нужно"  # незабудь исправить а то лажа будет
+                text = f"Ваше мнение для нас очень важно" #, но не очень то и нужно"  # незабудь исправить а то лажа будет
                 await context.bot.send_message(chat_id=update.message.chat_id,
                                                text=text)
                 context.user_data["feedback"] = False
