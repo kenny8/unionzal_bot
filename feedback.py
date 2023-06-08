@@ -26,13 +26,19 @@ async def feedback(update, context):
     admin_in = context.user_data.get("admin")
     if admin_in is not None and context.user_data["admin"]:
         if len(settings.FEEDBACK_USER) > 0:
+            max_len = False
             text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n "
             for i, feedback in enumerate(settings.FEEDBACK_USER):
                 read_status = "прочитано" if feedback[2] else "не прочитано"
                 text += f"{i + 1}. Статус: {read_status}\n"
+                if len(text) >= settings.MAX_MESSAGE_LENGTH:
+                    max_len = True
+                    break
             buttons = []
             for i in range(1, len(settings.FEEDBACK_USER) + 1):
-                buttons.append(InlineKeyboardButton(text=str(i), callback_data=f"feedback_prev_{i-1}"))
+                buttons.append(InlineKeyboardButton(text=str(i), callback_data=f"feedback_prev_{1}"))
+            if max_len:
+                buttons.append(InlineKeyboardButton(text="дальше", callback_data=f"feedback_more_{i-1}"))
             keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text=text,
