@@ -46,6 +46,7 @@ async def feedback(update, context):
                                        text=text)
         context.user_data["feedback"] = True
 
+
 @log_user_action
 async def feedback_callback(update, context):
     query = update.callback_query
