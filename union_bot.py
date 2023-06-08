@@ -110,6 +110,7 @@ def main():
     application.add_handler(
         MessageHandler(filters.Regex(f"^{settings.PASSWORD}$"), callback=admin)
     )
+
     application.add_handler(
         MessageHandler(filters.Regex(f"^Выход$"), callback=admin_out)
     )
