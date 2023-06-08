@@ -1,5 +1,5 @@
 
-from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import  InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InputMediaPhoto
 from json_parser import json_persons
 import settings

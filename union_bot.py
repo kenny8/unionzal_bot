@@ -1,12 +1,11 @@
 import logging
-from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
     CallbackQueryHandler,
     MessageHandler,
     filters,
-    CallbackContext,
 )
 import settings
 from afisha_ import afisha_callback, more_info_callback, read_more_callback, prev_callback, next_callback, afisha
@@ -14,7 +13,6 @@ from performers import performers, performers_callback, performers_search_name
 from giveaway import giveaway, giveaway_callback, giveaway_text
 from feedback import feedback, feedback_callback, feedback_text
 from admin import admin_out, admin
-from datetime import datetime
 import pickle
 
 # Включение логгирования

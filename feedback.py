@@ -24,13 +24,14 @@ async def feedback(update, context):
     admin_in = context.user_data.get("admin")
     if admin_in is not None and context.user_data["admin"]:
         if len(settings.FEEDBACK_USER) > 0:
-            text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n пользователь: {settings.FEEDBACK_USER[0][0]} \n\n {settings.FEEDBACK_USER[0][1]}"
-            delete_feedback_button = InlineKeyboardButton(text="удалить", callback_data=f"feedback_delete_0")
-            next_feedback_button = InlineKeyboardButton(text=">", callback_data=f"feedback_next_1")
-            if len(settings.FEEDBACK_USER) == 1:
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[])
-            else:
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
+            text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n "
+            for i, feedback in enumerate(settings.FEEDBACK_USER):
+                read_status = "прочитано" if feedback[2] else "не прочитано"
+                text += f"{i + 1}. Статус: {read_status}\n\n"
+            buttons = []
+            for i in range(1, len(settings.FEEDBACK_USER) + 1):
+                buttons.append(InlineKeyboardButton(text=str(i), callback_data=f"feedback_prev_{i}"))
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text=text,
                                            reply_markup=keyboard)
@@ -146,6 +147,6 @@ async def feedback_text(update, context):
                 await context.bot.send_message(chat_id=update.message.chat_id,
                                                text=text)
                 context.user_data["feedback"] = False
-                settings.FEEDBACK_USER.append(["@" + str(user.username), text_feedback])
+                settings.FEEDBACK_USER.append(["@" + str(user.username), text_feedback, False])
                 with open(settings.FEEDBACK_TXT, 'wb') as file:
                     pickle.dump(settings.FEEDBACK_USER, file)

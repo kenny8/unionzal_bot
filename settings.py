@@ -30,7 +30,7 @@ print(FEEDBACK_USER)
 print(USERS)
 print(START_GIVEAWAY)
 
-CHAT = "test12345671235"
+CHAT = "filarmonia48"  #"test12345671235"
 
 now = datetime.now()
 AFISHA_CARD = json_afisha()
