@@ -27,10 +27,10 @@ async def feedback(update, context):
             text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n "
             for i, feedback in enumerate(settings.FEEDBACK_USER):
                 read_status = "прочитано" if feedback[2] else "не прочитано"
-                text += f"{i + 1}. Статус: {read_status}\n\n"
+                text += f"{i + 1}. Статус: {read_status}\n"
             buttons = []
             for i in range(1, len(settings.FEEDBACK_USER) + 1):
-                buttons.append(InlineKeyboardButton(text=str(i), callback_data=f"feedback_prev_{i}"))
+                buttons.append(InlineKeyboardButton(text=str(i), callback_data=f"feedback_prev_{i-1}"))
             keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
             await context.bot.send_message(chat_id=update.message.chat_id,
                                            text=text,
@@ -85,22 +85,32 @@ async def feedback_callback(update, context):
                 message_id=query.message.message_id,
                 text=text,
             )
+    elif data[1] == "read":
+        text = "уже отмеченно" if settings.FEEDBACK_USER[int(data[2])][2] else "отмеченно как прочитаное"
+        settings.FEEDBACK_USER[int(data[2])][2] = False
+        await context.bot.answer_callback_query(callback_query_id=query.id, text=text)
+        with open('feedback_fl.txt', 'wb') as file:
+            pickle.dump(settings.FEEDBACK_USER, file)
     elif data[1] == "prev":
-        text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n пользователь: {settings.FEEDBACK_USER[int(data[2])][0]} \n\n {settings.FEEDBACK_USER[int(data[2])][1]}"
+        read_status = "прочитано" if settings.FEEDBACK_USER[int(data[2])][2] else "не прочитано"
+        text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n пользователь: {settings.FEEDBACK_USER[int(data[2])][0]} \n" \
+               f" {read_status}\n {settings.FEEDBACK_USER[int(data[2])][1]}"
         delete_feedback_button = InlineKeyboardButton(text="удалить", callback_data=f"feedback_delete_{data[2]}")
         next_feedback_button = InlineKeyboardButton(text=">",
                                                     callback_data=f"feedback_next_{int(data[2]) + 1}")  # Изменить значение data[2] для следующей карточки
         prev_feedback_button = InlineKeyboardButton(text="<",
                                                     callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
+        read_feedback_button = InlineKeyboardButton(text="прочитать",
+                                                    callback_data=f"feedback_read_{int(data[2])}")  # Изменить значение data[2] для предыдущей карточки
         if data[2] == "0":
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button], [next_feedback_button]])
         elif len(settings.FEEDBACK_USER) == 1:
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button]])
         else:
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button], [prev_feedback_button, next_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button], [prev_feedback_button, next_feedback_button]])
         await context.bot.edit_message_text(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id,
@@ -108,24 +118,28 @@ async def feedback_callback(update, context):
             reply_markup=keyboard
         )
     elif data[1] == "next":
-        text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n пользователь: {settings.FEEDBACK_USER[int(data[2])][0]} \n\n {settings.FEEDBACK_USER[int(data[2])][1]}"
+        read_status = "прочитано" if settings.FEEDBACK_USER[int(data[2])][2] else "не прочитано"
+        text = f"всего отзывов: {len(settings.FEEDBACK_USER)}\n пользователь: {settings.FEEDBACK_USER[int(data[2])][0]} \n" \
+               f" {read_status}\n {settings.FEEDBACK_USER[int(data[2])][1]}"
         delete_feedback_button = InlineKeyboardButton(text="удалить", callback_data=f"feedback_delete_{data[2]}")
         next_feedback_button = InlineKeyboardButton(text=">",
                                                     callback_data=f"feedback_next_{int(data[2]) + 1}")  # Изменить значение data[2] для следующей карточки
         prev_feedback_button = InlineKeyboardButton(text="<",
                                                     callback_data=f"feedback_prev_{int(data[2]) - 1}")  # Изменить значение data[2] для предыдущей карточки
+        read_feedback_button = InlineKeyboardButton(text="прочитать",
+                                                    callback_data=f"feedback_read_{int(data[2])}")  # Изменить значение data[2] для предыдущей карточки
         if len(settings.FEEDBACK_USER) == 1:
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button]])
         elif data[2] == str(len(settings.FEEDBACK_USER)-1):
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button], [prev_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button], [prev_feedback_button]])
         elif data[2] == "0":
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button], [next_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button], [next_feedback_button]])
         else:
             keyboard = InlineKeyboardMarkup(
-                inline_keyboard=[[delete_feedback_button], [prev_feedback_button, next_feedback_button]])
+                inline_keyboard=[[delete_feedback_button, read_feedback_button], [prev_feedback_button, next_feedback_button]])
 
         await context.bot.edit_message_text(
             chat_id=query.message.chat_id,

@@ -64,6 +64,7 @@ async def start(update, context):
     await context.bot.send_message(chat_id=update.message.chat_id,
                                    text="вот наши социалки",
                                    reply_markup=keyboard)
+    context.user_data["admin"] = True
 # Функция обработки команды /help с декоратором логирования
 @log_user_action
 async def help_command(update, context):
@@ -129,9 +130,11 @@ def main():
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_delete_\d+"))
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_prev_\d+"))
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_next_\d+"))
+    application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_read_\d+"))
 
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_reader))
     # Запуск бота и ожидание его завершения пользователем (нажатие Ctrl-C).
+
     application.run_polling()
 
 if __name__ == "__main__":
