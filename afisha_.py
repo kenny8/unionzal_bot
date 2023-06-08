@@ -1,8 +1,10 @@
+import admin
 import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InputMediaPhoto
 from datetime import datetime
 from json_parser import json_afisha
+from admin import update_admin_status
 import logging
 
 # Включение логгирования

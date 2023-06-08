@@ -4,6 +4,7 @@ import random
 import settings
 import pickle
 import logging
+from admin import update_admin_status
 
 # Включение логгирования
 logging.basicConfig(
@@ -22,6 +23,7 @@ def log_user_action(func):
 @log_user_action
 async def giveaway(update, context):
     """Отправка сообщения, когда пользователь нажимает на кнопку 'Розыгрыш билетов'."""
+    await update_admin_status(update, context)
     admin_in = context.user_data.get("admin")
     if admin_in is not None and context.user_data["admin"]:
         if settings.START_GIVEAWAY[0] is False:

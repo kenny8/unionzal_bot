@@ -12,7 +12,7 @@ from afisha_ import afisha_callback, more_info_callback, read_more_callback, pre
 from performers import performers, performers_callback, performers_search_name
 from giveaway import giveaway, giveaway_callback, giveaway_text
 from feedback import feedback, feedback_callback, feedback_text
-from admin import admin_out, admin
+from admin import admin_out, admin, update_admin_status
 import pickle
 
 # Включение логгирования
@@ -31,21 +31,34 @@ def log_user_action(func):
     return wrapper
 
 # Создание разметки клавиатуры для меню
-reply_keyboard = ReplyKeyboardMarkup(
+reply_keyboard_main = ReplyKeyboardMarkup(
     [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь"]],
     resize_keyboard=True, # изменить размер клавиатуры
 )
 
+reply_keyboard_admin = ReplyKeyboardMarkup(
+        [["Афиша", "Розыгрыш билетов"], ["Исполнители", "Обратная связь", "Выход"]],
+        resize_keyboard=True,  # изменить размер клавиатуры
+    )
 
 # Определение обработчиков команд. Обычно они принимают два аргумента: update и context.
 # Функция обработки команды /start с декоратором логирования
 @log_user_action
 async def start(update, context):
     """Отправка сообщения, когда пользователь вводит команду /start."""
+    global reply_keyboard  # Объявление переменной как глобальной
+    await update_admin_status(update, context)
     user = update.effective_user
     # Отправка сообщения пользователю
+    if context.user_data is not None:
+        search_query = context.user_data.get("admin")
+        if search_query is not None:
+            if context.user_data["admin"]:
+                reply_keyboard = reply_keyboard_admin
+            else:
+                reply_keyboard = reply_keyboard_main
     await update.message.reply_html(
-        rf"Привет, {user.mention_html()}! это бот липецкой филармонии!",
+        rf"Привет, {user.mention_html()}! Это бот Липецкой филармонии!",
         reply_markup=reply_keyboard,
     )
     if update.effective_chat.id not in [chat[1] for chat in settings.USERS]:
@@ -64,12 +77,12 @@ async def start(update, context):
     await context.bot.send_message(chat_id=update.message.chat_id,
                                    text="вот наши социалки",
                                    reply_markup=keyboard)
-    context.user_data["admin"] = True
 # Функция обработки команды /help с декоратором логирования
 @log_user_action
 async def help_command(update, context):
     """Отправка сообщения, когда пользователь вводит команду /help."""
     # Отправка сообщения пользователю с инструкцией, что нужно делать
+    await update_admin_status(update, context)
     admin_in = context.user_data.get("admin")
     if admin_in is not None and context.user_data["admin"]:
         text = "сейчас вы под админкой\n в розыгрышах можно настроить сам конкурс и обьявить об его окончании\n в отзывах можно посмотреть что написали люди"
@@ -81,6 +94,8 @@ async def text_reader(update, context):
     await giveaway_text(update, context)
     await feedback_text(update, context)
     await performers_search_name(update, context)
+
+
 
 def main():
     """Запуск бота."""

@@ -4,6 +4,7 @@ from telegram import InputMediaPhoto
 from json_parser import json_persons
 import settings
 from datetime import datetime
+from admin import update_admin_status
 import logging
 
 # Включение логгирования

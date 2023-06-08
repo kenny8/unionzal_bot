@@ -13,6 +13,11 @@ PASSWORD = "o76cy5zl2y"
 FEEDBACK_TXT = 'feedback_fl.txt'
 USERS_TXT = 'users_chat_fl.txt'
 GIVEAWAY_TXT = 'giveway_fl.txt'
+ADMIN_TXT = "admin_fl.txt"
+
+ADMIN_STATUS = []
+with open(ADMIN_TXT, 'rb') as file:
+    ADMIN_STATUS = pickle.load(file)
 
 START_GIVEAWAY = []
 with open(GIVEAWAY_TXT, 'rb') as file:
@@ -26,6 +31,7 @@ USERS = []
 with open(USERS_TXT, 'rb') as file:
     USERS = pickle.load(file)
 
+print(ADMIN_STATUS)
 print(FEEDBACK_USER)
 print(USERS)
 print(START_GIVEAWAY)
