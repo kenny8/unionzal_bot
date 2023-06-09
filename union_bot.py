@@ -10,7 +10,7 @@ from telegram.ext import (
 import settings
 from afisha_ import afisha_callback, more_info_callback, read_more_callback, prev_callback, next_callback, afisha
 from performers import performers, performers_callback, performers_search_name
-from giveaway import giveaway, giveaway_callback, giveaway_text
+from giveaway import giveaway, giveaway_callback, giveaway_text, giveaway_picture
 from feedback import feedback, feedback_callback, feedback_text
 from admin import admin_out, admin, update_admin_status
 import pickle
@@ -147,7 +147,8 @@ def main():
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_next_\d+"))
     application.add_handler(CallbackQueryHandler(callback=feedback_callback, pattern=r"feedback_read_\d+"))
 
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_reader))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_reader))# чекнуть надо бы переделать
+    application.add_handler(MessageHandler(filters.PHOTO, giveaway_picture))
     # Запуск бота и ожидание его завершения пользователем (нажатие Ctrl-C).
 
     application.run_polling()
